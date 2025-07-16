@@ -82,6 +82,33 @@ Bumping version in `peerDependencies` is not enabled by default. Pass `--peer` o
 taze --peer
 ```
 
+### Prerelease Versions
+
+By default, `taze` excludes prerelease versions (alpha, beta, rc, etc.) from dependency updates. Use the `--prerelease` or `-p` flag to include prerelease versions as update candidates.
+
+```bash
+taze --prerelease
+# or
+taze -p
+```
+
+This is useful when you want to update to the latest prerelease versions of packages, for example:
+- React 18.3.0-rc.1 instead of staying on 18.2.0
+- Vue 3.4.0-beta.1 for testing new features
+- TypeScript 5.1.0-alpha for early access
+
+**Note**: When prerelease mode is enabled:
+- In `default` mode, prerelease versions are only considered if they are within the current version range
+- In other modes (`minor`, `major`, etc.), prerelease versions are preferred over stable releases
+
+```bash
+# Check for prerelease updates in minor/patch versions
+taze minor --prerelease
+
+# Include all prerelease versions up to major changes
+taze major --prerelease
+```
+
 ### Config file
 
 With `taze.config.js` file, you can configure the same options the command has.
@@ -117,7 +144,9 @@ export default defineConfig({
   // disable checking for "overrides" package.json field
   depFields: {
     overrides: false
-  }
+  },
+  // include prerelease versions (alpha, beta, rc, etc.) as update candidates
+  prerelease: false
 })
 ```
 

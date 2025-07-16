@@ -88,8 +88,8 @@ export function getMaxSatisfying(versions: string[], current: string, mode: Rang
       maxVersion = null
 
     // Find all versions that satisfy the range
-    const satisfyingVersions = versions.filter(ver => 
-      semver.satisfies(ver, range, { includePrerelease })
+    const satisfyingVersions = versions.filter(ver =>
+      semver.satisfies(ver, range, { includePrerelease }),
     )
 
     if (!satisfyingVersions.length)
@@ -107,11 +107,13 @@ export function getMaxSatisfying(versions: string[], current: string, mode: Rang
       if (prereleases.length > 0) {
         // Use the highest prerelease
         version = prereleases[prereleases.length - 1]
-      } else {
+      }
+      else {
         // No prereleases, use the highest stable
         version = candidateVersions[candidateVersions.length - 1]
       }
-    } else {
+    }
+    else {
       // Default behavior: use the highest version (prerelease or stable)
       version = candidateVersions[candidateVersions.length - 1]
     }

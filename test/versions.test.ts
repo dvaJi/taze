@@ -134,7 +134,7 @@ it('getMaxSatisfying with prerelease support', () => {
   // With prerelease flag enabled:
   // - default mode respects latest tag constraint but includes prereleases <= latest
   expect(getMaxSatisfying(versions, '^1.0.0', 'default', tags, true)).toBe('1.1.0-beta.1')
-  
+
   // - other modes ignore latest tag constraint when prerelease is enabled
   expect(getMaxSatisfying(versions, '^1.0.0', 'minor', tags, true)).toBe('1.2.0-rc.1')
   expect(getMaxSatisfying(versions, '^1.0.0', 'major', tags, true)).toBe('1.2.0-rc.1')
