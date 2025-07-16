@@ -144,3 +144,24 @@ it('getMaxSatisfying with prerelease support', () => {
   const tags2 = { latest: '1.1.0' }
   expect(getMaxSatisfying(versions2, '^1.0.0', 'minor', tags2, true)).toBe('1.3.0-alpha.1')
 })
+
+it('getMaxSatisfying with prerelease - major and minor mode edge cases', () => {
+  const versions = [
+    '1.0.0',
+    '1.1.0',
+    '1.1.0-alpha.1',
+    '1.1.0-beta.1',
+    '1.2.0-rc.1',
+    '1.2.0',
+    '1.3.0-alpha.1',
+    '2.0.0-alpha.1',
+  ]
+  const tags = { latest: '1.1.0' }
+
+  // Using prerelease true and major, it should return '2.0.0-alpha.1'
+  expect(getMaxSatisfying(versions, '^1.0.0', 'major', tags, true)).toBe('2.0.0-alpha.1')
+  
+  // Using prerelease true and minor, it should return '1.3.0-alpha.1'
+  expect(getMaxSatisfying(versions, '^1.0.0', 'minor', tags, true)).toBe('1.3.0-alpha.1')
+})
+})
