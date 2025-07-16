@@ -84,21 +84,37 @@ export function getMaxSatisfying(versions: string[], current: string, mode: Rang
       throw new Error('invalid_range')
 
     let maxVersion: string | null = tags.latest
-    // In default mode, always respect the latest tag constraint
-    // In other modes with prerelease enabled, allow going beyond latest stable
-    if (mode !== 'default' && includePrerelease) {
+    if (!semver.satisfies(maxVersion, range, { includePrerelease }))
       maxVersion = null
-    }
-    else if (!semver.satisfies(maxVersion, range, { includePrerelease })) {
-      maxVersion = null
+
+    // Find all versions that satisfy the range
+    const satisfyingVersions = versions.filter(ver => 
+      semver.satisfies(ver, range, { includePrerelease })
+    )
+
+    if (!satisfyingVersions.length)
+      return
+
+    // In default mode with latest constraint, only consider versions <= latest
+    let candidateVersions = satisfyingVersions
+    if (maxVersion && mode === 'default') {
+      candidateVersions = satisfyingVersions.filter(ver => semver.lte(ver, maxVersion!))
     }
 
-    versions.forEach((ver) => {
-      if (semver.satisfies(ver, range, { includePrerelease })) {
-        if (!maxVersion || semver.lte(ver, maxVersion))
-          version = ver
+    // When prerelease is enabled and not in default mode, prefer prereleases over stable
+    if (includePrerelease && mode !== 'default') {
+      const prereleases = candidateVersions.filter(ver => semver.prerelease(ver))
+      if (prereleases.length > 0) {
+        // Use the highest prerelease
+        version = prereleases[prereleases.length - 1]
+      } else {
+        // No prereleases, use the highest stable
+        version = candidateVersions[candidateVersions.length - 1]
       }
-    })
+    } else {
+      // Default behavior: use the highest version (prerelease or stable)
+      version = candidateVersions[candidateVersions.length - 1]
+    }
   }
 
   if (!version)

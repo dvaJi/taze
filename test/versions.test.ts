@@ -139,8 +139,8 @@ it('getMaxSatisfying with prerelease support', () => {
   expect(getMaxSatisfying(versions, '^1.0.0', 'minor', tags, true)).toBe('1.2.0-rc.1')
   expect(getMaxSatisfying(versions, '^1.0.0', 'major', tags, true)).toBe('1.2.0-rc.1')
 
-  // Test with different latest tag
-  const tags2 = { latest: '1.0.0' }
-  expect(getMaxSatisfying(versions, '^1.0.0', 'minor', tags2, false)).toBe('1.1.0')
-  expect(getMaxSatisfying(versions, '^1.0.0', 'minor', tags2, true)).toBe('1.2.0-rc.1')
+  // Test with no prereleases within latest constraint - should go beyond
+  const versions2 = ['1.0.0', '1.1.0', '1.3.0-alpha.1', '2.0.0']
+  const tags2 = { latest: '1.1.0' }
+  expect(getMaxSatisfying(versions2, '^1.0.0', 'minor', tags2, true)).toBe('1.3.0-alpha.1')
 })
