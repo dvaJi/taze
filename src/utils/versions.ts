@@ -63,7 +63,7 @@ export function getPrefixedVersion(current: string, target: string) {
   )
 }
 
-export function getMaxSatisfying(versions: string[], current: string, mode: RangeMode, tags: Record<string, string>): string | undefined {
+export function getMaxSatisfying(versions: string[], current: string, mode: RangeMode, tags: Record<string, string>, includePrerelease = false): string | undefined {
   let version = null
 
   if (mode === 'latest') {
@@ -84,11 +84,17 @@ export function getMaxSatisfying(versions: string[], current: string, mode: Rang
       throw new Error('invalid_range')
 
     let maxVersion: string | null = tags.latest
-    if (!semver.satisfies(maxVersion, range))
+    // In default mode, always respect the latest tag constraint
+    // In other modes with prerelease enabled, allow going beyond latest stable
+    if (mode !== 'default' && includePrerelease) {
       maxVersion = null
+    }
+    else if (!semver.satisfies(maxVersion, range, { includePrerelease })) {
+      maxVersion = null
+    }
 
     versions.forEach((ver) => {
-      if (semver.satisfies(ver, range)) {
+      if (semver.satisfies(ver, range, { includePrerelease })) {
         if (!maxVersion || semver.lte(ver, maxVersion))
           version = ver
       }

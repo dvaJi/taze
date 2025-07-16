@@ -138,6 +138,12 @@ export interface CheckOptions extends CommonOptions {
    * @default true
    */
   nodecompat?: boolean
+  /**
+   * Include prerelease versions (alpha, beta, rc, etc.) as update candidates
+   *
+   * @default false
+   */
+  prerelease?: boolean
 }
 
 interface BasePackageMeta {
