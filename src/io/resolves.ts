@@ -92,9 +92,9 @@ export async function getPackageData(name: string): Promise<PackageData> {
   }
 }
 
-export function getVersionOfRange(dep: ResolvedDepChange, range: RangeMode) {
+export function getVersionOfRange(dep: ResolvedDepChange, range: RangeMode, includePrerelease = false) {
   const { versions, tags } = dep.pkgData
-  return getMaxSatisfying(versions, dep.currentVersion, range, tags)
+  return getMaxSatisfying(versions, dep.currentVersion, range, tags, includePrerelease)
 }
 
 export function updateTargetVersion(
@@ -102,6 +102,7 @@ export function updateTargetVersion(
   version: string,
   forgiving = true,
   includeLocked = false,
+  includePrerelease = false,
 ) {
   const versionLocked = /^\d+/.test(dep.currentVersion)
   if (versionLocked && !includeLocked) {
@@ -120,7 +121,7 @@ export function updateTargetVersion(
     // - but this mode will always ignore the locked pkgs
     // - so we need to reset the target
     const { versions, time = {}, tags } = dep.pkgData
-    const targetVersion = getMaxSatisfying(versions, dep.currentVersion, 'minor', tags)
+    const targetVersion = getMaxSatisfying(versions, dep.currentVersion, 'minor', tags, includePrerelease)
     if (targetVersion) {
       dep.targetVersion = targetVersion
       dep.targetVersionTime = time[dep.targetVersion]
@@ -224,7 +225,7 @@ export async function resolveDependency(
 
   if (error == null) {
     try {
-      target = getVersionOfRange(dep, mergeMode as RangeMode)
+      target = getVersionOfRange(dep, mergeMode as RangeMode, options.prerelease)
     }
     catch (e: any) {
       err = e.message || e
@@ -235,7 +236,7 @@ export async function resolveDependency(
   }
 
   if (target)
-    updateTargetVersion(dep, target, undefined, options.includeLocked)
+    updateTargetVersion(dep, target, undefined, options.includeLocked, options.prerelease)
   else
     dep.targetVersion = dep.currentVersion
 

@@ -115,3 +115,53 @@ it('getMaxSatisfying', async () => {
     experimental: '0.0.0-experimental-4508873393-20240430',
   }))
 }, 10_000)
+
+it('getMaxSatisfying with prerelease support', () => {
+  const versions = [
+    '1.0.0',
+    '1.1.0',
+    '1.1.0-alpha.1',
+    '1.1.0-beta.1',
+    '1.2.0-rc.1',
+    '2.0.0',
+  ]
+  const tags = { latest: '1.1.0' }
+
+  // Without prerelease flag (default behavior) - excludes prereleases
+  expect(getMaxSatisfying(versions, '^1.0.0', 'default', tags, false)).toBe('1.1.0')
+  expect(getMaxSatisfying(versions, '^1.0.0', 'minor', tags, false)).toBe('1.1.0')
+
+  // With prerelease flag enabled:
+  // - default mode respects latest tag constraint but includes prereleases <= latest
+  expect(getMaxSatisfying(versions, '^1.0.0', 'default', tags, true)).toBe('1.1.0-beta.1')
+
+  // - other modes ignore latest tag constraint when prerelease is enabled
+  expect(getMaxSatisfying(versions, '^1.0.0', 'minor', tags, true)).toBe('1.2.0-rc.1')
+  expect(getMaxSatisfying(versions, '^1.0.0', 'major', tags, true)).toBe('1.2.0-rc.1')
+
+  // Test with no prereleases within latest constraint - should go beyond
+  const versions2 = ['1.0.0', '1.1.0', '1.3.0-alpha.1', '2.0.0']
+  const tags2 = { latest: '1.1.0' }
+  expect(getMaxSatisfying(versions2, '^1.0.0', 'minor', tags2, true)).toBe('1.3.0-alpha.1')
+})
+
+it('getMaxSatisfying with prerelease - major and minor mode edge cases', () => {
+  const versions = [
+    '1.0.0',
+    '1.1.0',
+    '1.1.0-alpha.1',
+    '1.1.0-beta.1',
+    '1.2.0-rc.1',
+    '1.2.0',
+    '1.3.0-alpha.1',
+    '2.0.0-alpha.1',
+  ]
+  const tags = { latest: '1.1.0' }
+
+  // Using prerelease true and major, it should return '2.0.0-alpha.1'
+  expect(getMaxSatisfying(versions, '^1.0.0', 'major', tags, true)).toBe('2.0.0-alpha.1')
+  
+  // Using prerelease true and minor, it should return '1.3.0-alpha.1'
+  expect(getMaxSatisfying(versions, '^1.0.0', 'minor', tags, true)).toBe('1.3.0-alpha.1')
+})
+})

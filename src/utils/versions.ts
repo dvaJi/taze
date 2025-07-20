@@ -63,7 +63,7 @@ export function getPrefixedVersion(current: string, target: string) {
   )
 }
 
-export function getMaxSatisfying(versions: string[], current: string, mode: RangeMode, tags: Record<string, string>): string | undefined {
+export function getMaxSatisfying(versions: string[], current: string, mode: RangeMode, tags: Record<string, string>, includePrerelease = false): string | undefined {
   let version = null
 
   if (mode === 'latest') {
@@ -84,15 +84,39 @@ export function getMaxSatisfying(versions: string[], current: string, mode: Rang
       throw new Error('invalid_range')
 
     let maxVersion: string | null = tags.latest
-    if (!semver.satisfies(maxVersion, range))
+    if (!semver.satisfies(maxVersion, range, { includePrerelease }))
       maxVersion = null
 
-    versions.forEach((ver) => {
-      if (semver.satisfies(ver, range)) {
-        if (!maxVersion || semver.lte(ver, maxVersion))
-          version = ver
+    // Find all versions that satisfy the range
+    const satisfyingVersions = versions.filter(ver =>
+      semver.satisfies(ver, range, { includePrerelease }),
+    )
+
+    if (!satisfyingVersions.length)
+      return
+
+    // In default mode with latest constraint, only consider versions <= latest
+    let candidateVersions = satisfyingVersions
+    if (maxVersion && mode === 'default') {
+      candidateVersions = satisfyingVersions.filter(ver => semver.lte(ver, maxVersion!))
+    }
+
+    // When prerelease is enabled and not in default mode, prefer prereleases over stable
+    if (includePrerelease && mode !== 'default') {
+      const prereleases = candidateVersions.filter(ver => semver.prerelease(ver))
+      if (prereleases.length > 0) {
+        // Use the highest prerelease
+        version = prereleases[prereleases.length - 1]
       }
-    })
+      else {
+        // No prereleases, use the highest stable
+        version = candidateVersions[candidateVersions.length - 1]
+      }
+    }
+    else {
+      // Default behavior: use the highest version (prerelease or stable)
+      version = candidateVersions[candidateVersions.length - 1]
+    }
   }
 
   if (!version)

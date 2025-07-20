@@ -36,6 +36,7 @@ cli
   .option('--timediff', 'show time difference between the current and the updated version')
   .option('--nodecompat', 'show package compatibility with current node version')
   .option('--peer', 'Include peerDependencies in the update process')
+  .option('--prerelease, -p', 'include prerelease versions (alpha, beta, rc, etc.) as update candidates')
   .action(async (mode: RangeMode | undefined, options: Partial<CheckOptions>) => {
     if (mode) {
       if (!MODE_CHOICES.includes(mode)) {
